@@ -1,29 +1,48 @@
+const registrationForm = document.getElementById('registration-form');
+const userDataTable = document.getElementById('user-data');
+const userDataTableBody = userDataTable.querySelector('tbody');
+const dobInput = document.getElementById('dob');
 const dobError = document.getElementById('dobError');
-const dobInput = document.getElementById("dob");
-const userDataTable = document.getElementById("user-data");
-const userDataTableBody = userDataTable.getElementById("tbody");
-const registrationForm = document.getElementById("registration-form");
 
-window.addEventListener("load", () => {
+window.addEventListener('load', () => {
     updateUserDataTable();
 });
-function validateUserData(userData) {
-    const today = new Date();
-    const birth = new Date(userData.dob);
-    const age = today.getFullYear - birth.getFullYear();
-    if (age < 18 || age > 55) {
-        return false;
+registrationForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const userData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        dob: document.getElementById('dob').value,
+        terms: document.getElementById('terms').checked
+    };
+    if (!validateUserData(userData)) {
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = 'Value must be 09/11/1967 or later';
+        errorMessage.classList.add('error-message');
+        const dateField = document.getElementById('dob');
+        dateField.parentNode.appendChild(errorMessage);
     } else {
-        return true;
+        saveUserData(userData);
+        updateUserDataTable();
+        clearForm();
     }
+});
+function validateUserData(userData) {
+    const minAge = 18;
+    const maxAge = 55;
+    const today = new Date();
+    const birthDate = new Date(userData.dob);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    if (age < minAge || age > maxAge) {
+        return false;
+    }
+    return true;
 }
 function saveUserData(userData) {
     const existingUserData = JSON.parse(localStorage.getItem('userList')) || [];
     existingUserData.push(userData);
     localStorage.setItem('userList', JSON.stringify(existingUserData));
-}
-function clearForm() {
-    registrationForm.reset();
 }
 function updateUserDataTable() {
     userDataTableBody.innerHTML = '';
@@ -38,35 +57,17 @@ function updateUserDataTable() {
         userDataTable.classList.add('hidden');
     }
 }
-registrationForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const userData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email'), value,
-        passwword: document.getElementById('password').value,
-        dob: document.getElementById('dob').value,
-        terms: document.getElementById('terms').checked
-    };
-    if (!validateUserData(userData)) {
-        const errorMessage = document.createElement('p');
-        errorMessage.textContent = 'age must be between 18 and 55 '
-        errorMessage.classList.add('error-mesasge');
-        const dateField = document.getElementById('dob');
-        dateField.parentNode.appendChild(errorMessage);
-    } else {
-        saveUserData(userData);
-        updateUserDataTable();
-        clearForm();
-    }
-})
 function createUserDataTableRow(userData) {
     const row = document.createElement('tr');
     row.innerHTML = `
     <td>${userData.name}</td>
     <td>${userData.email}</td>
-    <td>${userData.passwword}</td>
+    <td>${userData.password}</td>
     <td>${userData.dob}</td>
     <td>${userData.terms ? 'true' : 'false'}</td>
     `;
     return row;
+}
+function clearForm() {
+    registrationForm.reset();
 }
